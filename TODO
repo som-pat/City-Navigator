@@ -19,3 +19,13 @@ Resolve docker conflicts
 
 [text](https://www.kaggle.com/datasets/arashnic/metro-network-dynamics/data)
 [text](https://medium.com/@theelucidate365/delhi-metro-network-analysis-3a534b203746)
+
+#TODO setup docker file
+#TODO start with overlay file as master page
+#TODO setup the ml model 
+#TODO find out routes which can not be solved through one means of transportation except walking
+#TODO setup the sidebar
+#TODO current ml model estimates ETA 
+#TODO try to find appropriate weather data
+#TODO try to include traffic data for routes
+ 
