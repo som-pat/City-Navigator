@@ -11,4 +11,27 @@ services:
       -./static:/app/static
       -./templates:app/templates
 
+#     depends_on:
+#       - postgres
+#     environment:
+#       DB_HOST: db
+#       DB_NAME: gtfs_del
+#       DB_USER: transitadmin
+#       DB_PASS: gtfsuser0000
+    
+#     entrypoint: /entrypoint.sh
+  
+#   postgres:
+#     image: postgres:14-alpine
+#     volumes:
+#       - ~/apps/postgres: /var/lib/postgresql/data
+#     restart: always
+#     environment:
+#       POSTGRES_DB : gtfs_del
+#       POSTGRES_USER : transitadmin
+#       POSTGRES_PASSWORD : gtfsuser0000
+
+
+# volumes:
+#   pgdata:
    

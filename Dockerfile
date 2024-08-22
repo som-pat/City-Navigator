@@ -1,5 +1,11 @@
 # Python base image 
-FROM python:3.9-slim
+FROM python:3.10
+
+# Install necessary packages, including PostgreSQL client
+# RUN apt-get update && apt-get install -y \
+#     postgresql-client \
+#     && rm -rf /var/lib/apt/lists/*
+
 
 #Set the working directory
 WORKDIR /code

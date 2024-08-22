@@ -5,6 +5,8 @@
         <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
         <link rel="stylesheet" href="/static/overlay_styles.css" />
         <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
     </head>
     <body>
         <div id="map">
@@ -20,7 +22,16 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
         
-        
+        L.Routing.control({
+            waypoints: [
+                L.latLng(28.675352,77.301178),
+                L.latLng(28.667879,77.228012)
+            ],
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+            }),
+            routeWhileDragging: true
+        }).addTo(map);
 
 
         </script>
