@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 services:
   web:
@@ -10,6 +10,20 @@ services:
       -./app:/app
       -./static:/app/static
       -./templates:app/templates
+  db: 
+    image: postgres
+    restart : unless-stopped
+    container_name: db
+    environment:
+      - POSTGRES_USER: transitadmin
+      - POSTGRES_PASSWORD: gtfsuser0000
+      - POSTGRES_DB: DB
+    ports:
+      -'5432:5432'
+    # volumes:
+    #   - ./db:/var/lib/postgresql/data
+    #   - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
 
 #     depends_on:
 #       - postgres
@@ -34,4 +48,5 @@ services:
 
 # volumes:
 #   pgdata:
-   
+
+# 172.26.64.1

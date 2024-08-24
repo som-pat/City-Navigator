@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 import os
 
 db_params = {
-    'host': os.getenv('DB_HOST', 'db'),  
+    'host': os.getenv('DB_HOST', 'postgdb'),  
     'database': os.getenv('DB_NAME', 'gtfs_del'),
     'user': os.getenv('DB_USER', 'transitadmin'),
     'password': os.getenv('DB_PASS', 'gtfsuser0000')
