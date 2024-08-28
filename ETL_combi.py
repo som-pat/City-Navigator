@@ -3,22 +3,23 @@ import psycopg2
 from sqlalchemy import create_engine
 
 
-conn = psycopg2.connect(
-    database= "transitpost",
-    user= "transitpost",
-    password= "transitpost",
-    host= "0.0.0.0",
-    port = "5432"
-)
+DATABASE_URL = "postgresql://transitpost:transitpost@localhost:5432/transitpost"
+engine = create_engine(DATABASE_URL)
+def get_db_connection():
+    conn = psycopg2.connect(DATABASE_URL)
+    return conn
 
-cur = conn.cursor()
-cur.execute("Select * From student")
-rows = cur.fetchall()
+# conn = get_db_connection()
+# cur = conn.cursor()
+# cur.execute("Select * From student")
+# rows = cur.fetchall()
 
-if not len(rows):
-    print("Empty")
-else:
-    for row in rows:
-        print(row)
+# if not len(rows):
+#     print("Empty")
+# else:
+#     for row in rows:
+#         print(row)
 
-cur.close()
+# cur.close()
+
+cd
