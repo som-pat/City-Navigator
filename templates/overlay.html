@@ -37,14 +37,43 @@
         // Initialize the map
         var map = L.map('map',{
             zoomControl:false
-        }).setView([28.7041, 77.1025],14); 
+        }).setView([28.7041, 77.1025],13); 
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
             attribution: '© OpenStreetMap'
         }).addTo(map);
         
-       
+       var startMarker, endMarker;
+       function addMarkers(startLat, startLon, endLat, endLon){
+        if (startMarker) map.removeLayer(startMarker);
+        if (endMarker) map.removeLayer(endMarker);
+
+        startMarker = L.marker([startLat, startLng], {icon: L.icon({iconUrl: 'start-icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('Start');
+        endMarker = L.marker([endLat, endLng], {icon: L.icon({iconUrl: 'end-icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('End');
+
+        // Focus the map on the markers
+        var bounds = L.latLngBounds([[startLat, startLng], [endLat, endLng]]);
+        map.fitBounds(bounds);
+
+       }
+
+       function updateMarkers() {
+            const startStopName = document.getElementById('start_point').value;
+            const endStopName = document.getElementById('end_point').value;
+
+            // Fetch coordinates from backend based on selected stop names
+            fetch(`/api/getCoordinates?start=${startStopName}&end=${endStopName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.start && data.end) {
+                        addMarkers(data.start.lat, data.start.lng, data.end.lat, data.end.lng);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching coordinates:", error);
+                });
+        }
 
         var awesompleteStart, awesompleteEnd;
 
@@ -71,12 +100,22 @@
                 autoFirst: true
             });
 
+            //update searches
             startPointInput.addEventListener('input', function() {
                 fetchStops(transportType, startPointInput.value, awesompleteStart);
             });
 
             endPointInput.addEventListener('input', function() {
                 fetchStops(transportType, endPointInput.value, awesompleteEnd);
+            });
+
+            // Update markers when the start point is selected
+            startPointInput.addEventListener('awesomplete-selectcomplete', function() {
+                updateMarkers();
+            });
+
+            endPointInput.addEventListener('awesomplete-selectcomplete', function() {
+                updateMarkers(); 
             });
         }
 
