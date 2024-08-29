@@ -111,7 +111,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         end = end.split('_')[0]
         print(start, end,transport_type)
         graph = construct_metro_graph()        
-        shortest_path = ShortestPath(graph, start, end)
+        shortest_path = ShortestPath(graph, int(start), int(end))
         print(shortest_path)
         dist, time, route_time,stop_to_route = dist_route_time(shortest_path)
         path_coords = []
@@ -135,6 +135,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
 
         graph = constructBus_graph()
         short_path = ShortestPath(graph, int(start_stop), int(end_stop))
+        print(short_path)
 
         # conn = get_db_connection()
         # cur = conn.cursor()
