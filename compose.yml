@@ -1,5 +1,22 @@
+version: "3.9"
 
 services:
+  web:
+    container_name: web
+    build: .
+    ports:
+    - "8000:8000"
+    environment:
+      - DB_URL="postgresql://transitpost:transitpost@postgres:5432/transitpost"
+    
+    volumes:
+      - ./app:/code/app
+      - ./static:/code/static
+      - ./templates:/code/templates
+
+    
+    depends_on:
+      - pgadmin
 
   postgres: 
     image: postgres
@@ -11,6 +28,8 @@ services:
       POSTGRES_DB: transitpost
     ports:
       - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
@@ -24,7 +43,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres-data:
+  pgdata: {}
 
 
 # 172.26.64.1

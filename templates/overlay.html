@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Interface</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <link rel="stylesheet" href="static/overlay_styles.css">
+</head>
+<body>
+    <div id="map">
+        <div id="overlay" class="overlay-container">
+            <div class="overlay-content">
+            <form method="POST" action="/searchRoute" id="route-form">
+                <input type="text" id="start_point" name="start_point" placeholder="Starting Point">
+                <input type="text" id="end_point" name="end_point" placeholder="Ending Point">
+                <select id="transport_type" name="transport_type" onchange="resetAwesomplete()">
+                    <option value="" disabled selected>Select</option>
+                    <option value="multimodal">Multimodal</option>
+                    <option value="Metro">Metro</option>
+                    <option value="Bus">Bus</option>
+                    <option value="walking">Walking</option>
+                </select>
+                <input type="submit" value="Search route" class="btn btn-primary">
+            </form>
+            <!-- Transport buttons -->
+              
+        </div>
+    </div>
+</div>
+
+    <script>
+        // Initialize the map
+        var map = L.map('map',{
+            zoomControl:false
+        }).setView([28.7041, 77.1025],14); 
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+       
+
+        var awesompleteStart, awesompleteEnd;
+
+        function resetAwesomplete() {
+            const transportType = document.getElementById('transport_type').value;
+            const startPointInput = document.getElementById('start_point');
+            const endPointInput = document.getElementById('end_point');
+
+            if (awesompleteStart) {
+                awesompleteStart.destroy();
+            }
+            if (awesompleteEnd) {
+                awesompleteEnd.destroy();
+            }
+
+            awesompleteStart = new Awesomplete(startPointInput, {
+                minChars: 1,
+                maxItems: 10,
+                autoFirst: true
+            });
+            awesompleteEnd = new Awesomplete(endPointInput, {
+                minChars: 1,
+                maxItems: 10,
+                autoFirst: true
+            });
+
+            startPointInput.addEventListener('input', function() {
+                fetchStops(transportType, startPointInput.value, awesompleteStart);
+            });
+
+            endPointInput.addEventListener('input', function() {
+                fetchStops(transportType, endPointInput.value, awesompleteEnd);
+            });
+        }
+
+        function fetchStops(transportType, query, awesompleteInstance) {
+            if (query.length < 1) return;
+
+            fetch(`/api/getStops?Type=${transportType}&query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.stops) {
+                        awesompleteInstance.list = data.stops;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching stops:", error);
+                });
+        }
+        map.on('zoomend', function() {
+            var zoomLevel = map.getZoom();
+            var inputs = document.querySelector('.overlay-container');
+            if (zoomLevel < 12) {
+                inputs.style.display = 'none';
+            } else {
+                inputs.style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>
