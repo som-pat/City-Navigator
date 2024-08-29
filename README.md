@@ -4,8 +4,8 @@
 
 ## Features
 
--Finds the fastest travellable route on the basis of metro, bus, walking or a mix of all
--Routes take into account the weather possibilites, traffic conditions and selects travel means for the fastest ETA 
+-Finds the fastest travellable route on the basis of metro, bus, walking or a mix of all.
+-Routes take into account the weather possibilites, traffic conditions and selects travel means for the fastest ETA. 
 
 
 Project Structure
