@@ -464,10 +464,10 @@ def get_db_connection():
 # metro_dist['multimodal'] = metro_dist.apply(metro_append, axis=1)
 
 # metro_dist = metro_dist.drop(['stop_id','stop_code','stop_name','stop_desc',
-#                               'stop_lat','stop_lon','stop_code_id' ],axis=1)
+#                               'stop_code_id' ],axis=1)
 
-# bus_dist = bus_dist.drop(['stop_code', 'stop_id','stop_lat','stop_lon',                    
-#                           'stop_name'  ,'zone_id' ,'stop_code_id'], axis=1)
+# bus_dist = bus_dist.drop(['stop_code', 'stop_id','stop_name'  ,'zone_id' ,'stop_code_id'], axis=1)                    
+#                           
 
 
 # df= pd.concat([metro_dist,bus_dist],ignore_index=True)
@@ -475,7 +475,7 @@ def get_db_connection():
 # print('11.Multimodal_stop_time')
 # print(df.head().to_string())
 
-# df.to_csv('Dataset/results/Searchname.csv',index=False)
+# df.to_csv('Dataset/results/NameLatLon.csv',index=False)
 
 
 
@@ -499,7 +499,7 @@ csv_files = {
     'buses_congo': 'Dataset/buses/s_times3.txt',
     'combi':'Dataset/results/combi_mb.csv',
     'walking':'Dataset/results/dwc2.csv',
-    'search':'Dataset/results/Searchname.csv'
+    'search':'Dataset/results/NameLatLon.csv'
 }
 
 for table_name, file_path in csv_files.items():

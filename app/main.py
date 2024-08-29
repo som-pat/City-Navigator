@@ -97,6 +97,31 @@ async def get_stops(Type: str = Query(...), query: str = Query(...)):
         conn.close()
     return JSONResponse(content={"stops": stops})
 
+
+@app.get("/api/getCoordinates")
+async def get_coordinates(start: str, end: str):
+    # Fetch coordinates from your database based on start and end stop names
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT stop_lat, stop_lon FROM search WHERE multimodal = %s", (start,))
+    start_coords = cur.fetchone()
+    
+    cur.execute("SELECT stop_lat, stop_lon FROM search WHERE multimodal = %s", (end,))
+    end_coords = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if not start_coords or not end_coords:
+        return JSONResponse(content={"error": "Coordinates not found"}, status_code=404)
+
+    return JSONResponse(content={
+        "start": {"lat": start_coords[0], "lng": start_coords[1]},
+        "end": {"lat": end_coords[0], "lng": end_coords[1]}
+    })
+
+
 @app.post('/searchRoute',response_class=JSONResponse)
 async def searchRoute(request: Request, start_point: str = Form(...), 
                        end_point: str = Form(...),  transport_type:str = Form(...) ):
@@ -111,7 +136,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         end = end.split('_')[0]
         print(start, end,transport_type)
         graph = construct_metro_graph()        
-        shortest_path = ShortestPath(graph, start, end)
+        shortest_path = ShortestPath(graph, int(start), int(end))
         print(shortest_path)
         dist, time, route_time,stop_to_route = dist_route_time(shortest_path)
         path_coords = []
@@ -135,6 +160,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
 
         graph = constructBus_graph()
         short_path = ShortestPath(graph, int(start_stop), int(end_stop))
+        print(short_path)
 
         # conn = get_db_connection()
         # cur = conn.cursor()
