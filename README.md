@@ -4,8 +4,8 @@
 
 ## Features
 
--Finds the fastest travellable route on the basis of metro, bus, walking or a mix of all.
--Routes take into account the weather possibilites, traffic conditions and selects travel means for the fastest ETA. 
+- Finds the fastest travellable route on the basis of metro, bus, walking or a mix of all.
+- Routes take into account the weather possibilites, traffic conditions and selects travel means for the fastest ETA. 
 
 
 Project Structure
@@ -33,12 +33,12 @@ project_root/
 
 For running the project follow the below instructions 
 ```
--Clone the repo : https://github.com/som-pat/Metro.git 
--Start virtual environment: .venv\Scripts\Activate
--Download the datasets from the links below
--Populate the database : docker-compose start pgadmin
--Start the whole app : docker-compose up
--Application will be running on localhost:8000
+- Clone the repo : https://github.com/som-pat/Metro.git 
+- Start virtual environment: .venv\Scripts\Activate
+- Download the datasets from the links below
+- Populate the database : docker-compose start pgadmin
+- Start the whole app : docker-compose up
+- Application will be running on localhost:8000
 ```
 #### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static, ETA shown is based on historical data.
 ##### GTFS link 
