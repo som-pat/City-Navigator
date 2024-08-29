@@ -38,7 +38,7 @@ For running the project follow the below instructions
 - Clone the repo : https://github.com/som-pat/Metro.git 
 - Start virtual environment: .venv\Scripts\Activate
 - Download the datasets from the links below
-- Populate the database : docker-compose start pgadmin
+- Populate the database : docker-compose start pgadmin && python ETL_combi.py
 - Start the whole app : docker-compose up
 - Application will be running on localhost:8000
 ```
