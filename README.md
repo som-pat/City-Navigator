@@ -1,5 +1,7 @@
 # City_Navigator
 
+## About
+
 #### This project is a dockerized web application that displays routes from one point to another based on metro, bus, walking and multimodial(mix of all types) for a city using FastAPI, Leaflet.js, Python, PostgreSQL, Docker and machine learning algorithms. Users can input start and end points for their journey to find an efficient and shortest route. Factors like less walking and faster journey routes can be set and the algorithm will include those and map the route dynamically.
 
 ## Features
