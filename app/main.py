@@ -103,7 +103,7 @@ async def get_coordinates(start: str, end: str):
     # Fetch coordinates from your database based on start and end stop names
     conn = get_db_connection()
     cur = conn.cursor()
-
+    print(start,end)
     cur.execute("SELECT stop_lat, stop_lon FROM search WHERE multimodal = %s", (start,))
     start_coords = cur.fetchone()
     
@@ -112,15 +112,15 @@ async def get_coordinates(start: str, end: str):
 
     cur.close()
     conn.close()
+    print(start_coords, end_coords)
 
-    if not start_coords or not end_coords:
-        return JSONResponse(content={"error": "Coordinates not found"}, status_code=404)
+    # if not start_coords or not end_coords:
+    #     return JSONResponse(content={"error": "Coordinates not found"}, status_code=404)
 
     return JSONResponse(content={
         "start": {"lat": start_coords[0], "lng": start_coords[1]},
         "end": {"lat": end_coords[0], "lng": end_coords[1]}
     })
-
 
 @app.post('/searchRoute',response_class=JSONResponse)
 async def searchRoute(request: Request, start_point: str = Form(...), 
