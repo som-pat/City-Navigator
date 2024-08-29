@@ -1,124 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Interface</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="static/overlay_style.css">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+    <link rel="stylesheet" href="static/overlay_styles.css">
 </head>
 <body>
-    <div id="overlay">
-        <div class="overlay-content">
-            <h1>Beginning and Ending</h1>
-            <form method="POST" action = "/searchBusRoute" id="route-form">            
-                
-                    <input type="text" id="start_point" name="start_point" list="stop_list" placeholder="Starting Point" onchange="updateSPStopIds()">
-                        <datalist id="stop_list">
-                        {% for stop in stops %}
-                        <option value="{{ stop[1] }}">{{ stop[1] }}</option>
-                        {% endfor %}
-                    </datalist>
-            
-                    <label for="sp_ids"> </label>
-                    <select id="sp_ids" name="Start_Stop">
-                        <option value= >Select Stop ID</option>
-                        <!-- Options will be populated dynamically -->
-                    </select>
-                
-                    <input type="text" id="end_point" name="end_point" list="stop_list" placeholder="Ending Point" onchange="updateEPStopIds()">
-                        <datalist id="stop_list">
-                        {% for stop in stops %}
-                        <option value="{{ stop[1] }}">{{ stop[1] }}</option>
-                        {% endfor %}
-                    </datalist>
-                
-                    <label for="ep_ids"> </label>
-                    <select id="ep_ids" name="End_Stop">
-                        <option value= >Select Stop ID</option>
-                        <!-- Options will be populated dynamically -->
-                    </select>
-            
-                <br>
-                <br>
-                <label for="transport_type">Transport Type:</label>
-                <select id="transport_type" name="transport_type">
-                    <option value="metro">Metro</option>
-                    <option value="bus">Bus</option>
-                    <option value="walk">Walk</option>
+    <div id="map">
+        <div id="overlay" class="overlay-container">
+            <div class="overlay-content">
+            <form method="POST" action="/searchRoute" id="route-form">
+                <input type="text" id="start_point" name="start_point" placeholder="Starting Point">
+                <input type="text" id="end_point" name="end_point" placeholder="Ending Point">
+                <select id="transport_type" name="transport_type" onchange="resetAwesomplete()">
+                    <option value="" disabled selected>Select</option>
+                    <option value="multimodal">Multimodal</option>
+                    <option value="Metro">Metro</option>
+                    <option value="Bus">Bus</option>
+                    <option value="walking">Walking</option>
                 </select>
-                &emsp;
-                <input type="submit" value="Search route">
-                </form>
-                
-                
-                
-                
-                
-            
-            <button class="close-button" onclick="closeOverlay()">X</button>
+                <input type="submit" value="Search route" class="btn btn-primary">
+            </form>
+            <!-- Transport buttons -->
+              
         </div>
     </div>
-
-    <div id="map">
-        <div class="map-title">City Map</div>
-        </div>
-
-    
+</div>
 
     <script>
-        var map = L.map('map').setView([28.7041, 77.1025],16); //  city's latitude, longitude and initial zoom
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        // Initialize the map
+        var map = L.map('map',{
+            zoomControl:false
+        }).setView([28.7041, 77.1025],14); 
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
             attribution: '© OpenStreetMap'
         }).addTo(map);
-
-        const stopData = {{ stop_data | tojson }};
         
-        function updateSPStopIds() {
-            const stopName = document.getElementById('start_point').value;
-            const stopIdsDropdown = document.getElementById('sp_ids');
-            
-            // Clear previous options
-            stopIdsDropdown.innerHTML = '<option value="">Select Stop ID</option>';
-            
-            if (stopName && stopData[stopName]) {
-                const stopIds = stopData[stopName].split(',');
-                stopIds.forEach(id => {
-                    const option = document.createElement('option');
-                    option.value = id;
-                    option.textContent = id;
-                    stopIdsDropdown.appendChild(option);
-                });
+       
+
+        var awesompleteStart, awesompleteEnd;
+
+        function resetAwesomplete() {
+            const transportType = document.getElementById('transport_type').value;
+            const startPointInput = document.getElementById('start_point');
+            const endPointInput = document.getElementById('end_point');
+
+            if (awesompleteStart) {
+                awesompleteStart.destroy();
             }
-        }
-
-        function updateEPStopIds() {
-            const stopName = document.getElementById('end_point').value;
-            const stopIdsDropdown = document.getElementById('ep_ids');
-            
-            
-            stopIdsDropdown.innerHTML = '<option value="">Select Stop ID</option>';
-            
-            if (stopName && stopData[stopName]) {
-                const stopIds = stopData[stopName].split(',');
-                stopIds.forEach(id => {
-                    const option = document.createElement('option');
-                    option.value = id;
-                    option.textContent = id;
-                    stopIdsDropdown.appendChild(option);
-                });
+            if (awesompleteEnd) {
+                awesompleteEnd.destroy();
             }
+
+            awesompleteStart = new Awesomplete(startPointInput, {
+                minChars: 1,
+                maxItems: 10,
+                autoFirst: true
+            });
+            awesompleteEnd = new Awesomplete(endPointInput, {
+                minChars: 1,
+                maxItems: 10,
+                autoFirst: true
+            });
+
+            startPointInput.addEventListener('input', function() {
+                fetchStops(transportType, startPointInput.value, awesompleteStart);
+            });
+
+            endPointInput.addEventListener('input', function() {
+                fetchStops(transportType, endPointInput.value, awesompleteEnd);
+            });
         }
 
+        function fetchStops(transportType, query, awesompleteInstance) {
+            if (query.length < 1) return;
 
-        function closeOverlay() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('map').style.filter = 'none'; // Remove blur effect from map
+            fetch(`/api/getStops?Type=${transportType}&query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.stops) {
+                        awesompleteInstance.list = data.stops;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching stops:", error);
+                });
         }
-
-        
-
+        map.on('zoomend', function() {
+            var zoomLevel = map.getZoom();
+            var inputs = document.querySelector('.overlay-container');
+            if (zoomLevel < 12) {
+                inputs.style.display = 'none';
+            } else {
+                inputs.style.display = 'flex';
+            }
+        });
     </script>
 </body>
 </html>
