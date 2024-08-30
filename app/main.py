@@ -173,6 +173,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
 
 
 def route_metro(start, end):
+
     graph = construct_metro_graph()
     path = ShortestPath(graph, start, end,'Metro')
     print(path)
@@ -254,21 +255,23 @@ def route_stop_details(path,type):
     stop_details = []
     total_time = 0
     total_distance = 0
-    whole = {}
+    
     print(path)
     try:        
         if type == 'Metro':
             for i in path:
                 metro_cur = conn.cursor()
-                metro_cur.execute("Select time_secs,distance_m,dep_stop_name From metro_result where dep_stop_id =%s",(i,))
+                metro_cur.execute("Select time_secs,distance_m,dep_stop_name,route_color From metro_result where dep_stop_id =%s",(i,))
                 st = metro_cur.fetchone()
+                print(st)
                 stop_details.append({
                     'stop_id': i,
                     'stop_name':st[2],
-                    'time':str(st[0])
+                    'time':st[0],
+                    'distance':st[1],
+                    'route_color':st[3]                    
                 })
-                total_distance += (st[1]/1000)
-                total_time += int(st[2]/60)
+            print(stop_details)
             metro_cur.close()
             conn.close() 
         elif type =='Bus':
@@ -286,12 +289,9 @@ def route_stop_details(path,type):
     except Exception as e:
         print(f"Error passing stop_details: {str(e)}")
         
-    finally:
-        whole['stop_details'] = stop_details
-        whole['total_distance'] = total_distance
-        whole['total_time'] = total_time
+        
     
-    return whole
+    return stop_details
 
 
 
