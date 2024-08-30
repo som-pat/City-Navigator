@@ -479,27 +479,32 @@ def get_db_connection():
 
 
 
+# csv_files = {
+#     'agency':'Dataset/metro/agency.txt',
+#     'calendar':'Dataset/metro/calendar.txt',
+#     'route': 'Dataset/metro/routes4.txt',
+#     'shape': 'Dataset/metro/shapes.txt',
+#     'stop_times':'Dataset/metro/stop_time3.txt',
+#     'stops': 'Dataset/metro/stops.txt',
+#     'trips': 'Dataset/metro/trips.txt',
+#     'buses_agency':'Dataset/buses/agency.txt',
+#     'buses_calendar':'Dataset/buses/calendar.txt',
+#     'buses_route': 'Dataset/buses/routes.txt',
+#     'buses_fare_attributes': 'Dataset/buses/fare_attributes.txt',
+#     'buses_fare_rules':'Dataset/buses/fare_rules.txt',
+#     'buses_stop_times':'Dataset/buses/stop_times2.txt',
+#     'buses_stops': 'Dataset/buses/stops.txt',
+#     'buses_trips': 'Dataset/buses/trips.txt',
+#     'buses_st2': 'Dataset/buses/stop2.txt',
+#     'buses_congo': 'Dataset/buses/s_times3.txt',
+#     'combi':'Dataset/results/combi_mb.csv',
+#     'walking':'Dataset/results/dwc2.csv',
+#     'search':'Dataset/results/NameLatLon.csv'
+# }
+
 csv_files = {
-    'agency':'Dataset/metro/agency.txt',
-    'calendar':'Dataset/metro/calendar.txt',
-    'route': 'Dataset/metro/routes4.txt',
-    'shape': 'Dataset/metro/shapes.txt',
-    'stop_times':'Dataset/metro/stop_time3.txt',
-    'stops': 'Dataset/metro/stops.txt',
-    'trips': 'Dataset/metro/trips.txt',
-    'buses_agency':'Dataset/buses/agency.txt',
-    'buses_calendar':'Dataset/buses/calendar.txt',
-    'buses_route': 'Dataset/buses/routes.txt',
-    'buses_fare_attributes': 'Dataset/buses/fare_attributes.txt',
-    'buses_fare_rules':'Dataset/buses/fare_rules.txt',
-    'buses_stop_times':'Dataset/buses/stop_times2.txt',
-    'buses_stops': 'Dataset/buses/stops.txt',
-    'buses_trips': 'Dataset/buses/trips.txt',
-    'buses_st2': 'Dataset/buses/stop2.txt',
-    'buses_congo': 'Dataset/buses/s_times3.txt',
-    'combi':'Dataset/results/combi_mb.csv',
-    'walking':'Dataset/results/dwc2.csv',
-    'search':'Dataset/results/NameLatLon.csv'
+    'metro_result': 'Dataset/results/metro_stop_connection.csv',
+    'bus_result': 'Dataset/results/bus_stop_connection.csv'
 }
 
 for table_name, file_path in csv_files.items():

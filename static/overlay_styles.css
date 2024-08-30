@@ -28,6 +28,37 @@ body, html {
     align-items: center;
 }
 
+#route-summary {
+    position: absolute;
+    top: 10%;
+    left: 10px;
+    width: 300px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    display: none; /* Initially hidden */
+    overflow-y: auto;
+    max-height: 60vh;
+}
+.route-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.close-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+.route-option {
+    cursor: pointer;
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
 
 
 
