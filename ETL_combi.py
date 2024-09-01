@@ -503,8 +503,8 @@ def get_db_connection():
 # }
 
 csv_files = {
-    'metro_result': 'Dataset/results/metro_stop_routecon.csv',
-    'bus_result': 'Dataset/results/bus_stop_connection.csv'
+    'metro_result': 'Dataset/results/res22.csv',
+    # 'bus_result': 'Dataset/buses/final2.csv'
 }
 
 for table_name, file_path in csv_files.items():

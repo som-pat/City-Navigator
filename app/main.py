@@ -250,48 +250,81 @@ def ShortestPath(graph, start, end, type):
 
     return whole
 
+def time_adder(tt, t):
+    (h,m,s) = t.split(':')
+    t = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+    tt += t
+    return tt
+
 def route_stop_details(path,type):
     conn = get_db_connection()
     stop_details = []
     total_time = 0
     total_distance = 0
-    
-    print(path)
+    start_time = 0
+    end_time = 0
+    whole ={}
+    total_time = datetime.datetime.now()
+    total_time = total_time.strftime("%H:%M:%S")
+    (h,m,s) = total_time.split(':')
+    total_time = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+    start_time = total_time
+    print(1,path)
     try:        
         if type == 'Metro':
-            for i in path:
-                metro_cur = conn.cursor()
-                metro_cur.execute("Select time_secs,distance_m,dep_stop_name,route_color From metro_result where dep_stop_id =%s",(i,))
+            
+            metro_cur = conn.cursor()
+            for i in path:                
+                metro_cur.execute("""Select individual_time,point_distance,stop_name,
+                                  route_color,stop_lat,stop_lon From metro_result where stop_id =%s""",(i,))
                 st = metro_cur.fetchone()
-                print(st)
+                total_distance+=st[1]/1000
+                total_time = time_adder(total_time,st[0])
+                for_time = str(total_time).split('.')[0]
+                print(type(for_time))
                 stop_details.append({
                     'stop_id': i,
                     'stop_name':st[2],
-                    'time':st[0],
+                    'time_instance':for_time,
                     'distance':st[1],
-                    'route_color':st[3]                    
+                    'route_color':st[3],
+                    'co-ordinates':[st[4],st[5]],
                 })
-            print(stop_details)
+            
+            end_time = str(total_time-start_time).split('.')[0]
+            print(end_time)
             metro_cur.close()
             conn.close() 
         elif type =='Bus':
-            for i in path:
-                bus_cur = conn.cursor()
-                bus_cur.execute("Select time_secs,distance_m,dep_stop_name From bus_result where dep_stop_id =%s",(i,))
-                st = metro_cur.fetchone()
+            
+            bus_cur = conn.cursor()
+            for i in path:                
+                bus_cur.execute("""Select individual_time,estimated_distance,stop_name 
+                                stop_lat,stop_lon From bus_result where stop_id =%s""",(i,))
+                st = bus_cur.fetchone()
+                total_distance+=st[1]/1000
+                print(type(st[0]),st[0])
+                total_time = time_adder(total_time,st[0])
+                for_time = str(total_time).split('.')[0]
                 stop_details.append({
                     'stop_id': i,
                     'stop_name':st[2],
-                    'time':st[0]
+                    'time_instance':for_time,
+                    'distance':st[1],
+                    'co-ordinates':[st[4],st[5]],
                 })
-                total_distance += (st[1]/1000)
-                total_time += int(st[2]/60)
+            end_time = str(total_time-start_time).split('.')[0]
+            bus_cur.close()
+            conn.close() 
     except Exception as e:
         print(f"Error passing stop_details: {str(e)}")
         
-        
+    finally:
+        whole['stop_details'] =  stop_details
+        whole['total_time'] = end_time
+        whole['total_distance'] = total_distance
     
-    return stop_details
+    return whole
 
 
 
@@ -341,13 +374,13 @@ def dist_route_time(shortest_path):
     print(format(dist/1000, ".2f") ,format(time/60,".2f") , route_time  ,stop_to_route)
     return  format(dist/1000, ".2f") ,format(time/60,".2f") , route_time  ,stop_to_route
 
-def time_adder(time_list):
-    tsum = datetime.timedelta()
-    for i in time_list:
-        (h,m,s) = i.split(':')
-        t = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-        tsum += t
-    return str(tsum) 
+# def time_adder(time_list):
+#     tsum = datetime.timedelta()
+#     for i in time_list:
+#         (h,m,s) = i.split(':')
+#         t = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+#         tsum += t
+#     return str(tsum) 
 
 def constructBus_graph():
     conn = get_db_connection()
