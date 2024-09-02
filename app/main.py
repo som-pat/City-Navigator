@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Request, Form, HTTPException
+from fastapi import FastAPI, status, Request, Form, HTTPException, Depends
 from typing import List
 import uvicorn
 import psycopg2
@@ -264,58 +264,67 @@ def route_stop_details(path,type):
     start_time = 0
     end_time = 0
     whole ={}
-    total_time = datetime.datetime.now()
-    total_time = total_time.strftime("%H:%M:%S")
-    (h,m,s) = total_time.split(':')
-    total_time = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-    start_time = total_time
+
     print(1,path)
-    try:        
-        if type == 'Metro':
-            
+    try:
+
+        total_time = datetime.datetime.now()
+        (h,m,s) = (total_time.strftime("%H:%M:%S")).split(':')
+        total_time = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+        
+        start_time = total_time
+
+        if type == 'Metro': 
+
             metro_cur = conn.cursor()
             for i in path:                
+                
                 metro_cur.execute("""Select individual_time,point_distance,stop_name,
                                   route_color,stop_lat,stop_lon From metro_result where stop_id =%s""",(i,))
+                
                 st = metro_cur.fetchone()
                 total_distance+=st[1]/1000
                 total_time = time_adder(total_time,st[0])
-                for_time = str(total_time).split('.')[0]
-                print(type(for_time))
+                
                 stop_details.append({
                     'stop_id': i,
-                    'stop_name':st[2],
-                    'time_instance':for_time,
-                    'distance':st[1],
-                    'route_color':st[3],
-                    'co-ordinates':[st[4],st[5]],
+                    'stop_name': st[2],
+                    'time_instance': str(total_time).split('.')[0],
+                    'distance': st[1],
+                    'route_color': st[3],
+                    'co-ordinates': [st[4],st[5]]
                 })
             
             end_time = str(total_time-start_time).split('.')[0]
-            print(end_time)
             metro_cur.close()
-            conn.close() 
+            conn.close()
+
         elif type =='Bus':
             
             bus_cur = conn.cursor()
             for i in path:                
-                bus_cur.execute("""Select individual_time,estimated_distance,stop_name 
-                                stop_lat,stop_lon From bus_result where stop_id =%s""",(i,))
+                
+                bus_cur.execute("""Select individual_time,estimated_distance,stop_name, 
+                                stop_lat,stop_lon, route_long_name From bus_result where stop_id =%s""",(i,))
+                
                 st = bus_cur.fetchone()
-                total_distance+=st[1]/1000
-                print(type(st[0]),st[0])
+                total_distance += st[1]
+            
                 total_time = time_adder(total_time,st[0])
-                for_time = str(total_time).split('.')[0]
+
                 stop_details.append({
                     'stop_id': i,
                     'stop_name':st[2],
-                    'time_instance':for_time,
+                    'time_instance':str(total_time).split('.')[0],
                     'distance':st[1],
-                    'co-ordinates':[st[4],st[5]],
+                    'co-ordinates':[st[3],st[4]],
+                    'bus_route_id':st[5]
                 })
+
             end_time = str(total_time-start_time).split('.')[0]
             bus_cur.close()
-            conn.close() 
+            conn.close()
+
     except Exception as e:
         print(f"Error passing stop_details: {str(e)}")
         
