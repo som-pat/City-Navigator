@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travel Interface</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.css" />
@@ -31,13 +35,20 @@
               
         </div>
     </div>
+    <div id="route-summary">
+        <div class="route-summary-header">
+            <h5>Route Summary</h5>
+            <button class="close-button" onclick="closeRouteSummary()">X</button>
+        </div>
+        <div id="route-options"></div>
+    </div>
 </div>
 
     <script>
         // Initialize the map
         var map = L.map('map',{
             zoomControl:false
-        }).setView([28.7041, 77.1025],13); 
+        }).setView([28.7041, 77.1025],12); 
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
@@ -50,8 +61,8 @@
             if (startMarker) map.removeLayer(startMarker);
             if (endMarker) map.removeLayer(endMarker);
 
-            startMarker = L.marker([startLat, startLng], {icon: L.icon({iconUrl: 'start-icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('Start');
-            endMarker = L.marker([endLat, endLng], {icon: L.icon({iconUrl: 'end-icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('End');
+            startMarker = L.marker([startLat, startLng], {icon: L.icon({iconUrl: 'icons/start_icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('Start');
+            endMarker = L.marker([endLat, endLng], {icon: L.icon({iconUrl: 'icons/end_icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('End');
 
             // Focus the map on the markers
             var bounds = L.latLngBounds([[startLat, startLng], [endLat, endLng]]);
@@ -143,6 +154,10 @@
                 inputs.style.display = 'flex';
             }
         });
+
+        function closeRouteSummary() {
+            document.getElementById('route-summary').style.display = 'none';
+        }
     </script>
 </body>
 </html>

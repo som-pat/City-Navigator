@@ -79,11 +79,11 @@ def get_db_connection():
 # # Stop_times.txt conversion
 # stop_time = pd.read_csv('Dataset/metro/stop_times.txt')
 
-# def normalize_time(time_str):    
-#     h, m, s = map(int, time_str.split(':'))    
-#     if h >= 24:
-#         h = h % 24        
-#     return f"{h:02}:{m:02}:{s:02}"
+def normalize_time(time_str):    
+    h, m, s = map(int, time_str.split(':'))    
+    if h >= 24:
+        h = h % 24        
+    return f"{h:02}:{m:02}:{s:02}"
 
 
 # stop_time['arrival_time'] = stop_time['arrival_time'].apply(normalize_time)
@@ -119,82 +119,82 @@ def get_db_connection():
 # # stop_time.to_csv('Dataset/stop_time3.txt', header=True, index=None, sep=',', mode='a') # type: ignore
 
 # #Bus
-# bus_stoptime = pd.read_csv('Dataset/buses/stop_times.txt')
+bus_stoptime = pd.read_csv('Dataset/buses/stop_times.txt')
 
-# def cal_dist_latlon(row):
-#     if (row['stop_lat_lag'] == 0) and (row['stop_lon_lag'] == 0):
-#         return 0
-#     return gd.geodesic((row['stop_lat_lag'], row['stop_lon_lag']), (row['stop_lat'], row['stop_lon'])).km
+def cal_dist_latlon(row):
+    if (row['stop_lat_lag'] == 0) and (row['stop_lon_lag'] == 0):
+        return 0
+    return gd.geodesic((row['stop_lat_lag'], row['stop_lon_lag']), (row['stop_lat'], row['stop_lon'])).km
 
-# def stop_aggregation():
-#     stop_df = pd.read_csv('Dataset/buses/stops.txt')
-#     stop_df['stop_code_id'] = stop_df['stop_code'] + '_' + stop_df['stop_id'].astype(str)
-#     stop_df.to_csv('Dataset/buses/stop2.txt', header=True, index=None, sep=',', mode='a') # type: ignore
+def stop_aggregation():
+    stop_df = pd.read_csv('Dataset/buses/stops.txt')
+    stop_df['stop_code_id'] = stop_df['stop_code'] + '_' + stop_df['stop_id'].astype(str)
+    stop_df.to_csv('Dataset/buses/stop2.txt', header=True, index=None, sep=',', mode='a') # type: ignore
 
-# bus_stoptime = pd.read_csv('Dataset/buses/stop_times.txt')
-# stop_aggregation()
+bus_stoptime = pd.read_csv('Dataset/buses/stop_times.txt')
+stop_aggregation()
 
-# bus_stoptime ['arrival_time'] = bus_stoptime ['arrival_time'].apply(normalize_time)
-# bus_stoptime ['departure_time'] = bus_stoptime ['departure_time'].apply(normalize_time)
+bus_stoptime ['arrival_time'] = bus_stoptime ['arrival_time'].apply(normalize_time)
+bus_stoptime ['departure_time'] = bus_stoptime ['departure_time'].apply(normalize_time)
 
-# print('4.bus_stop_time')
-# print(bus_stoptime.head().to_string())
+print('4.bus_stop_time')
+print(bus_stoptime.head().to_string())
 
-# df2 = pd.read_csv('Dataset/buses/trips.txt')
-# bus_stoptime = pd.merge(bus_stoptime,df2, on='trip_id')
-# df4 = pd.read_csv('Dataset/buses/routes.txt')
-# bus_stoptime = pd.merge(bus_stoptime,df4, on ='route_id')
-# df5 =pd.read_csv('Dataset/buses/stops.txt')
-# bus_stoptime = pd.merge(bus_stoptime,df5,on='stop_id')
-# print('4.2 bus_stop_time')
-# print(bus_stoptime.columns)
-# print(bus_stoptime.head().to_string())
-# bus_stoptime = bus_stoptime.drop(['service_id','shape_id', 'agency_id',
-#                                   'route_short_name','zone_id','route_type'],axis=1)
+df2 = pd.read_csv('Dataset/buses/trips.txt')
+bus_stoptime = pd.merge(bus_stoptime,df2, on='trip_id')
+df4 = pd.read_csv('Dataset/buses/routes.txt')
+bus_stoptime = pd.merge(bus_stoptime,df4, on ='route_id')
+df5 =pd.read_csv('Dataset/buses/stops.txt')
+bus_stoptime = pd.merge(bus_stoptime,df5,on='stop_id')
+print('4.2 bus_stop_time')
+print(bus_stoptime.columns)
+print(bus_stoptime.head().to_string())
+bus_stoptime = bus_stoptime.drop(['service_id','shape_id', 'agency_id',
+                                  'route_short_name','zone_id','route_type'],axis=1)
 
-# print('5.bus_stop_time')
-# print(bus_stoptime.head().to_string())
+print('5.bus_stop_time')
+print(bus_stoptime.head().to_string())
 
-# def process_bus_trip(trip_df):    
-#     # Sort by stop_sequence
-#     trip_df = trip_df.sort_values(by='stop_sequence')    
+def process_bus_trip(trip_df):    
+    # Sort by stop_sequence
+    trip_df = trip_df.sort_values(by='stop_sequence')    
 
-#     trip_df['arrival_time'] = pd.to_timedelta(trip_df['arrival_time'])
-#     trip_df['departure_time'] = pd.to_timedelta(trip_df['departure_time'])
-#     trip_df['individual_time'] = (trip_df['arrival_time'] - trip_df['departure_time'].shift()).fillna(pd.Timedelta(seconds=0))
+    trip_df['arrival_time'] = pd.to_timedelta(trip_df['arrival_time'])
+    trip_df['departure_time'] = pd.to_timedelta(trip_df['departure_time'])
+    trip_df['individual_time'] = (trip_df['arrival_time'] - trip_df['departure_time'].shift()).fillna(pd.Timedelta(seconds=0))
 
-#     trip_df['arrival_time'] = trip_df['arrival_time'].apply(lambda x: str(x).replace('0 days ', ''))
-#     trip_df['departure_time'] = trip_df['departure_time'].apply(lambda x: str(x).replace('0 days ', ''))    
-#     trip_df['individual_time'] = trip_df['individual_time'].apply(lambda x: str(x).replace('0 days ', ''))
-#     trip_df['individual_time'] = trip_df['individual_time'].apply(lambda x: str(x).replace('-1 days ', ''))
-#     return trip_df
+    trip_df['arrival_time'] = trip_df['arrival_time'].apply(lambda x: str(x).replace('0 days ', ''))
+    trip_df['departure_time'] = trip_df['departure_time'].apply(lambda x: str(x).replace('0 days ', ''))    
+    trip_df['individual_time'] = trip_df['individual_time'].apply(lambda x: str(x).replace('0 days ', ''))
+    trip_df['individual_time'] = trip_df['individual_time'].apply(lambda x: str(x).replace('-1 days ', ''))
+    return trip_df
 
 
-# #arrival and departure time format, distance
-# bus_stoptime = bus_stoptime.groupby('trip_id').apply(process_bus_trip).reset_index(drop=True)
-# # fin_df.to_csv('Dataset/buses/stop_times3.txt', header=True, index=None, sep=',', mode='a') # type: ignore
+#arrival and departure time format, distance
+bus_stoptime = bus_stoptime.groupby('trip_id').apply(process_bus_trip).reset_index(drop=True)
+# fin_df.to_csv('Dataset/buses/stop_times3.txt', header=True, index=None, sep=',', mode='a') # type: ignore
 
-# #individual time to secs, hour of day inclusion
-# bus_stoptime['individual_time'] = pd.to_timedelta(bus_stoptime['individual_time']).dt.seconds
-# bus_stoptime['day_hour'] = pd.to_datetime(bus_stoptime['arrival_time'], format='%H:%M:%S').dt.hour
+#individual time to secs, hour of day inclusion
+bus_stoptime['convtime_secs'] = pd.to_timedelta(bus_stoptime['individual_time']).dt.seconds
+bus_stoptime['day_hour'] = pd.to_datetime(bus_stoptime['arrival_time'], format='%H:%M:%S').dt.hour
 
-# # Fill value is taken as 0 so that NaN does not affect calculations
-# # The lags for every trips 1st coordinates will be 0 as trips start from there
-# bus_stoptime['stop_lat_lag'] = bus_stoptime.groupby('trip_id')['stop_lat'].shift(1,fill_value=0)
-# bus_stoptime['stop_lon_lag'] = bus_stoptime.groupby('trip_id')['stop_lon'].shift(1, fill_value=0)
-# bus_stoptime['estimated_distance'] = bus_stoptime.apply(cal_dist_latlon, axis=1)
+# Fill value is taken as 0 so that NaN does not affect calculations
+# The lags for every trips 1st coordinates will be 0 as trips start from there
+bus_stoptime['stop_lat_lag'] = bus_stoptime.groupby('trip_id')['stop_lat'].shift(1,fill_value=0)
+bus_stoptime['stop_lon_lag'] = bus_stoptime.groupby('trip_id')['stop_lon'].shift(1, fill_value=0)
+bus_stoptime['estimated_distance'] = bus_stoptime.apply(cal_dist_latlon, axis=1)
 
-# bus_stoptime['cumulative_distance'] = bus_stoptime.groupby('trip_id')['estimated_distance'].cumsum()
-# bus_stoptime['cumulative_time'] = bus_stoptime.groupby('trip_id')['individual_time'].cumsum()
+bus_stoptime['cumulative_distance'] = bus_stoptime.groupby('trip_id')['estimated_distance'].cumsum()
+bus_stoptime['cumulative_time'] = bus_stoptime.groupby('trip_id')['convtime_secs'].cumsum()
 
-# bus_stoptime['route_id_encoded'] = bus_stoptime['route_id'].astype('category').cat.codes
-# bus_stoptime['stop_name_encoded'] = bus_stoptime['stop_name'].astype('category').cat.codes
+bus_stoptime['route_id_encoded'] = bus_stoptime['route_id'].astype('category').cat.codes
+bus_stoptime['stop_name_encoded'] = bus_stoptime['stop_name'].astype('category').cat.codes
 
-# print('6.bus_stop_time')
-# print(bus_stoptime.head().to_string())
-# print(bus_stoptime.shape)
+print('6.bus_stop_time')
+print(bus_stoptime.head().to_string())
+print(bus_stoptime.shape)
 
-# bus_stoptime.to_csv('Dataset/buses/final_stop_times.txt', header=True, index=None, sep=',', mode='a') # type: ignore
+bus_stoptime.to_csv('Dataset/buses/final_stop_times.csv',index=False) # type: ignore
 
 
 # #Multimodal
@@ -479,27 +479,32 @@ def get_db_connection():
 
 
 
+# csv_files = {
+#     'agency':'Dataset/metro/agency.txt',
+#     'calendar':'Dataset/metro/calendar.txt',
+#     'route': 'Dataset/metro/routes4.txt',
+#     'shape': 'Dataset/metro/shapes.txt',
+#     'stop_times':'Dataset/metro/stop_time3.txt',
+#     'stops': 'Dataset/metro/stops.txt',
+#     'trips': 'Dataset/metro/trips.txt',
+#     'buses_agency':'Dataset/buses/agency.txt',
+#     'buses_calendar':'Dataset/buses/calendar.txt',
+#     'buses_route': 'Dataset/buses/routes.txt',
+#     'buses_fare_attributes': 'Dataset/buses/fare_attributes.txt',
+#     'buses_fare_rules':'Dataset/buses/fare_rules.txt',
+#     'buses_stop_times':'Dataset/buses/stop_times2.txt',
+#     'buses_stops': 'Dataset/buses/stops.txt',
+#     'buses_trips': 'Dataset/buses/trips.txt',
+#     'buses_st2': 'Dataset/buses/stop2.txt',
+#     'buses_congo': 'Dataset/buses/s_times3.txt',
+#     'combi':'Dataset/results/combi_mb.csv',
+#     'walking':'Dataset/results/dwc2.csv',
+#     'search':'Dataset/results/NameLatLon.csv'
+# }
+
 csv_files = {
-    'agency':'Dataset/metro/agency.txt',
-    'calendar':'Dataset/metro/calendar.txt',
-    'route': 'Dataset/metro/routes4.txt',
-    'shape': 'Dataset/metro/shapes.txt',
-    'stop_times':'Dataset/metro/stop_time3.txt',
-    'stops': 'Dataset/metro/stops.txt',
-    'trips': 'Dataset/metro/trips.txt',
-    'buses_agency':'Dataset/buses/agency.txt',
-    'buses_calendar':'Dataset/buses/calendar.txt',
-    'buses_route': 'Dataset/buses/routes.txt',
-    'buses_fare_attributes': 'Dataset/buses/fare_attributes.txt',
-    'buses_fare_rules':'Dataset/buses/fare_rules.txt',
-    'buses_stop_times':'Dataset/buses/stop_times2.txt',
-    'buses_stops': 'Dataset/buses/stops.txt',
-    'buses_trips': 'Dataset/buses/trips.txt',
-    'buses_st2': 'Dataset/buses/stop2.txt',
-    'buses_congo': 'Dataset/buses/s_times3.txt',
-    'combi':'Dataset/results/combi_mb.csv',
-    'walking':'Dataset/results/dwc2.csv',
-    'search':'Dataset/results/NameLatLon.csv'
+    'metro_result': 'Dataset/results/res22.csv',
+    'bus_result': 'Dataset/buses/final_stop_times.csv'
 }
 
 for table_name, file_path in csv_files.items():
