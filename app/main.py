@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from typing import List
 from sqlalchemy import create_engine, text
 import re
+import random
 
 
 DATABASE_URL = "postgresql://transitpost:transitpost@postgres:5432/transitpost"
@@ -124,20 +125,30 @@ async def get_coordinates(start: str, end: str):
         "end": {"lat": end_coords[0], "lng": end_coords[1]}
     })
 
-@app.post('/searchRoute',response_class=JSONResponse)
+
+
+@app.post("/api/getRouteSummary",response_class=JSONResponse)
 async def searchRoute(request: Request, start_point: str = Form(...), 
                        end_point: str = Form(...),  transport_type:str = Form(...) ):
     
     start = (re.search(r'\((.*?)\)',str(start_point))).group(1) # type: ignore
     end = (re.search(r'\((.*?)\)', str(end_point))).group(1) # type: ignore
-    path_coords = []
-    route_name = []
-    stop_time = []
+    route_summary = []
+    
 
     if transport_type == 'Metro':
+        
         start = start.split('_')[0]
         end = end.split('_')[0]
-        route_metro(int(start), int(end))
+        graph = construct_metro_graph()
+        whole = ShortestPath(graph,int(start), int(end),'Metro')
+        
+        for i in whole['stop_details'] :
+            route_summary.append({'name':i['stop_name'], 
+                                  'time':i['time_instance'], 
+                                  'route_col':i['route_color']})    
+
+
        
 
         
@@ -147,36 +158,36 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         end_stop = str(end).split('_')[1]
 
         graph = constructBus_graph()
-        short_path = ShortestPath(graph, int(start_stop), int(end_stop),'Bus')
-        print(short_path)
+        whole = ShortestPath(graph, int(start_stop), int(end_stop),'Bus')
+        for i in whole['stop_details'] :
+            route_summary.append({'name':i['stop_name'], 
+                                'time':i['time_instance'], 
+                                'route_col':i['route_color']}) 
 
-        # conn = get_db_connection()
-        # cur = conn.cursor()
-        # stop_ls = []
-        # for stop_id in short_path:
-        #     cur.execute("SELECT stop_id,stop_lat, stop_lon, stop_name FROM buses_stops WHERE stop_id = %s", (stop_id,))
-        #     stop_ls.append(cur.fetchone())
-        # cur.close()
-        # conn.close()
 
-        # print(stop_ls)
-        # route_id = len(route_store)
-        # route_store[route_id] = stop_ls
          
     
     elif transport_type == 'multimodal':
         graph = construct_graph_multimodal()
-        path = shortest_path_multimodal(graph, start, end)
-        print(path)
-              
-    return 
+        whole = shortest_path_multimodal(graph, start, end)
+        
+        for i in whole['stop_details'] :
+            route_summary.append({'name':i['stop_name'], 
+                                  'time':i['time_instance'], 
+                                  'route_col':i['route_color']})  
+
+    return JSONResponse(content={"path":whole['path_coords'] ,   # map routing 
+                                 "route_summary":route_summary,  # summary details
+                                 "dist":whole['total_distance'],#distance:summary 
+                                 "time":whole['total_time']})    # time:summary  
 
 
-def route_metro(start, end):
 
-    graph = construct_metro_graph()
-    path = ShortestPath(graph, start, end,'Metro')
-    print(path)
+# def route_metro(start, end):
+
+#     graph = construct_metro_graph()
+#     path = ShortestPath(graph, start, end,'Metro')
+#     print(path)
     # dist, time, route_time,stop_to_route = dist_route_time(path)
     # conn = get_db_connection()
     # stopcur = conn.cursor()        
@@ -253,12 +264,14 @@ def ShortestPath(graph, start, end, type):
 def time_adder(tt, t):
     (h,m,s) = t.split(':')
     t = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-    tt += t
+    platform_delay = datetime.timedelta(seconds= random.randint(5,8))
+    tt += t + platform_delay
     return tt
 
 def route_stop_details(path,type):
     conn = get_db_connection()
     stop_details = []
+    path_coords = []
     total_time = 0
     total_distance = 0
     start_time = 0
@@ -285,14 +298,20 @@ def route_stop_details(path,type):
                 st = metro_cur.fetchone()
                 total_distance+=st[1]/1000
                 total_time = time_adder(total_time,st[0])
+
+                path_coords.append({
+                    'stop_name': st[2],
+                    'geopoints': [st[4],st[5]],
+                    'stop_lat': st[4],
+                    'stop_lon':st[5]
+                })
                 
                 stop_details.append({
                     'stop_id': i,
                     'stop_name': st[2],
                     'time_instance': str(total_time).split('.')[0],
                     'distance': st[1],
-                    'route_color': st[3],
-                    'co-ordinates': [st[4],st[5]]
+                    'route_color': st[3]
                 })
             
             end_time = str(total_time-start_time).split('.')[0]
@@ -312,12 +331,17 @@ def route_stop_details(path,type):
             
                 total_time = time_adder(total_time,st[0])
 
+                path_coords.append({
+                    'stop_name': st[2],
+                    'geopoints': [st[3],st[4]]
+                })
+
                 stop_details.append({
                     'stop_id': i,
                     'stop_name':st[2],
                     'time_instance':str(total_time).split('.')[0],
                     'distance':st[1],
-                    'co-ordinates':[st[3],st[4]],
+                    'geopoints':[st[3],st[4]],
                     'bus_route_id':st[5]
                 })
 
@@ -329,6 +353,7 @@ def route_stop_details(path,type):
         print(f"Error passing stop_details: {str(e)}")
         
     finally:
+        whole['path_coords'] = path_coords
         whole['stop_details'] =  stop_details
         whole['total_time'] = end_time
         whole['total_distance'] = total_distance
@@ -383,13 +408,7 @@ def dist_route_time(shortest_path):
     print(format(dist/1000, ".2f") ,format(time/60,".2f") , route_time  ,stop_to_route)
     return  format(dist/1000, ".2f") ,format(time/60,".2f") , route_time  ,stop_to_route
 
-# def time_adder(time_list):
-#     tsum = datetime.timedelta()
-#     for i in time_list:
-#         (h,m,s) = i.split(':')
-#         t = datetime.timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-#         tsum += t
-#     return str(tsum) 
+
 
 def constructBus_graph():
     conn = get_db_connection()
