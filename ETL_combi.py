@@ -437,7 +437,7 @@ bus_stoptime.to_csv('Dataset/buses/final_stop_times.csv',index=False) # type: ig
 
 # df.to_csv('Dataset/results/combi_mb2.csv', index=False)
 
-
+## namelatlon - txt file deleted
 
 # metro_dist = pd.read_csv('Dataset/metro/stops.txt')
 # bus_dist = pd.read_csv('Dataset/buses/stop2.txt')
@@ -501,6 +501,7 @@ bus_stoptime.to_csv('Dataset/buses/final_stop_times.csv',index=False) # type: ig
 #     'walking':'Dataset/results/dwc2.csv',
 #     'search':'Dataset/results/NameLatLon.csv'
 # }
+
 
 csv_files = {
     'metro_result': 'Dataset/results/res22.csv',
