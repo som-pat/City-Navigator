@@ -146,7 +146,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         for i in whole['stop_details'] :
             route_summary.append({'name':i['stop_name'], 
                                   'time':i['time_instance'], 
-                                  'route_col':i['route_color']})    
+                                  'route_fact':i['route_fact']})    
 
 
        
@@ -162,7 +162,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         for i in whole['stop_details'] :
             route_summary.append({'name':i['stop_name'], 
                                 'time':i['time_instance'], 
-                                'route_col':i['route_color']}) 
+                                'route_fact':i['route_fact']}) 
 
 
          
@@ -174,7 +174,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         for i in whole['stop_details'] :
             route_summary.append({'name':i['stop_name'], 
                                   'time':i['time_instance'], 
-                                  'route_col':i['route_color']})  
+                                  'route_fact':i['route_fact']})  
 
     return JSONResponse(content={"path":whole['path_coords'] ,   # map routing 
                                  "route_summary":route_summary,  # summary details
@@ -183,23 +183,7 @@ async def searchRoute(request: Request, start_point: str = Form(...),
 
 
 
-# def route_metro(start, end):
 
-#     graph = construct_metro_graph()
-#     path = ShortestPath(graph, start, end,'Metro')
-#     print(path)
-    # dist, time, route_time,stop_to_route = dist_route_time(path)
-    # conn = get_db_connection()
-    # stopcur = conn.cursor()        
-    # i=0
-
-    # for stop_id in path:
-    #     stopcur.execute("SELECT stop_lat, stop_lon, stop_name FROM stops WHERE stop_id = %s", (stop_id,))
-    #     stop = stopcur.fetchone()
-    #     path_coords.append([stop[0], stop[1]]) # type: ignore
-    #     route_name.append(stop[2]) # type: ignore        
-    #     stop_time.append({'name':stop[2],'time':route_time[i]+' + 20s','route':stop_to_route[stop_id]})# type: ignore
-    #     i+=1
 
 def construct_metro_graph():
     conn = get_db_connection()
@@ -311,7 +295,7 @@ def route_stop_details(path,type):
                     'stop_name': st[2],
                     'time_instance': str(total_time).split('.')[0],
                     'distance': st[1],
-                    'route_color': st[3]
+                    'route_fact': st[3]
                 })
             
             end_time = str(total_time-start_time).split('.')[0]
@@ -338,11 +322,11 @@ def route_stop_details(path,type):
 
                 stop_details.append({
                     'stop_id': i,
-                    'stop_name':st[2],
-                    'time_instance':str(total_time).split('.')[0],
-                    'distance':st[1],
-                    'geopoints':[st[3],st[4]],
-                    'bus_route_id':st[5]
+                    'stop_name': st[2],
+                    'time_instance': str(total_time).split('.')[0],
+                    'distance': st[1],
+                    'geopoints': [st[3],st[4]],
+                    'route_fact': st[5]
                 })
 
             end_time = str(total_time-start_time).split('.')[0]

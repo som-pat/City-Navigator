@@ -61,9 +61,23 @@ body, html {
     cursor: pointer;
 }
 
-.stop-summary {
-    margin-bottom: 10px;
+
+
+.route-line {
+    padding: 5px;
+    margin: 5px 0;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
 }
 
+.stop-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    margin: 5px 0;
+    border-bottom: 1px solid #ddd;
+}
 
 

@@ -46,7 +46,7 @@
         <button class="close-btn" onclick="closeRouteSummary()">X</button>
     </div>
     <div class="route-summary-content">
-        <!-- Route details will be dynamically populated here -->
+
     </div>
 </div>
 
@@ -91,7 +91,7 @@
             fetch(`/api/getCoordinates?start=${startStopName}&end=${endStopName}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
+                    
                     if (data.start && data.end) {
                         addMarkers(data.start.lat, data.start.lng, data.end.lat, data.end.lng);          
                     }}                     
@@ -169,7 +169,7 @@
             .then(response => response.json())
             .then(data => {
                 populateRouteSummary(data.route_summary, data.dist, data.time);
-                drawRouteOnMap(data.path); // Draw the route on the map
+                drawRouteOnMap(data.path); 
                 document.getElementById('route-summary').classList.remove('d-none');
             })
                 .catch(error => {
@@ -178,24 +178,54 @@
         }
         
 
-        // Populate the route summary container
+        //  route summary container
         function populateRouteSummary(routeSummary, totalDistance, totalTime) {
             var summaryContainer = document.querySelector('.route-summary-content');
             summaryContainer.innerHTML = `<h4>Distance: ${totalDistance.toFixed(2)} km</h4>
                                         <h4>Time: ${totalTime}</h4>`;
+
+            var previousRoute = null;
+            var isFirstRoute = true;
+
             
             routeSummary.forEach(stop => {
+                
+                if (stop.route_fact !== previousRoute) {
+                    var routeLine = document.createElement('div');
+                    routeLine.className = 'route-line';
+                    routeLine.style.backgroundColor = stop.route_fact || '#CCCCCC'; // Use the route color or a default color
+                    routeLine.style.padding = '5px';
+                    routeLine.style.color = 'white'; 
+                    routeLine.style.marginBottom = '5px';
+                    routeLine.style.borderRadius = '5px';
+                    
+                    // text for the first route or when the route changes
+                    if (isFirstRoute) {
+                        routeLine.textContent = `${stop.route_fact || 'undefined'} line`;
+                        isFirstRoute = false;
+                    } else {
+                        routeLine.textContent = `Change to ${stop.route_fact || 'undefined'} line`;
+                    }
+
+                    summaryContainer.appendChild(routeLine);
+                    previousRoute = stop.route_fact;
+                }
+
+                // div for each stop with the time and the route color label
                 var stopElement = document.createElement('div');
                 stopElement.classList.add('stop-summary');
+                stopElement.style.display = 'flex';
+                stopElement.style.justifyContent = 'space-between';
+                stopElement.style.alignItems = 'center';
+                stopElement.style.padding = '5px 0';
+                
                 stopElement.innerHTML = `
                     <span>${stop.name} - ${stop.time}</span>
-                    <span style="background-color: ${stop.route_col}; padding: 5px; border-radius: 5px;">Route Color</span>
                 `;
                 summaryContainer.appendChild(stopElement);
             });
         }
 
-        // Draw the route on the map
         function drawRouteOnMap(path) {
             if (routeLayer) {
                 map.removeLayer(routeLayer);
@@ -218,27 +248,11 @@
             routeLayer = L.polyline(latLngs, {color: 'red', weight: 4}).addTo(map);            
             map.fitBounds(routeLayer.getBounds());
         }
-
-       
-
-        // function showRouteOnMap(routeId) {
-        //     // Logic to fetch and display the specific route on the map
-        //     routechecker.forEach(function(layer) {
-        //         map.removeLayer(layer);
-        //     });
-        //     routechecker = [];
-        //     var latlngs = [];
-        //     path.forEach(function(coords) {
-        //         latlngs.push([coords[0], coords[1]]);
-        //     });
-        //     var polyline = L.polyline(latlngs, {color: 'red', weight: 4}).addTo(map);
-        //     routechecker.push(polyline);
-        // }
         
 
-        // function closeRouteSummary(){
-        //     document.getElementById('route-summary').classList.add('d-none');
-        // }
+        function closeRouteSummary(){
+            document.getElementById('route-summary').classList.add('d-none');
+        }
 
 
         map.on('zoomend', function() {
