@@ -193,7 +193,7 @@
                 if (stop.route_fact !== previousRoute) {
                     var routeLine = document.createElement('div');
                     routeLine.className = 'route-line';
-                    routeLine.style.backgroundColor = stop.route_fact || '#CCCCCC'; // Use the route color or a default color
+                    routeLine.style.backgroundColor =  '#00FF00'; // Use the route color or a default color
                     routeLine.style.padding = '5px';
                     routeLine.style.color = 'white'; 
                     routeLine.style.marginBottom = '5px';
@@ -201,10 +201,10 @@
                     
                     // text for the first route or when the route changes
                     if (isFirstRoute) {
-                        routeLine.textContent = `${stop.route_fact || 'undefined'} line`;
+                        routeLine.textContent = `${stop.route_fact} line`;
                         isFirstRoute = false;
                     } else {
-                        routeLine.textContent = `Change to ${stop.route_fact || 'undefined'} line`;
+                        routeLine.textContent = `Change to ${stop.route_fact} line`;
                     }
 
                     summaryContainer.appendChild(routeLine);
@@ -258,7 +258,7 @@
         map.on('zoomend', function() {
             var zoomLevel = map.getZoom();
             var inputs = document.querySelector('.overlay-container');
-            if (zoomLevel < 12) {
+            if (zoomLevel < 10) {
                 inputs.style.display = 'none';
             } else {
                 inputs.style.display = 'flex';

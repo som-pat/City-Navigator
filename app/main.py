@@ -174,7 +174,9 @@ async def searchRoute(request: Request, start_point: str = Form(...),
         for i in whole['stop_details'] :
             route_summary.append({'name':i['stop_name'], 
                                   'time':i['time_instance'], 
-                                  'route_fact':i['route_fact']})  
+                                  'route_fact':i['route_fact']})
+
+
 
     return JSONResponse(content={"path":whole['path_coords'] ,   # map routing 
                                  "route_summary":route_summary,  # summary details
@@ -212,6 +214,36 @@ def construct_metro_graph():
     
     return graph
 
+def constructBus_graph():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+   
+    cur.execute("SELECT stop_id FROM buses_stops")
+    stops = cur.fetchall()
+    
+    
+    cur.execute("""
+    Select bc.stop_id , bc2.stop_id ,bc2.estimated_distance
+    From buses_congo bc 
+    Join buses_congo bc2 ON bc.trip_id = bc2.trip_id 
+                AND bc.stop_sequence+1 = bc2.stop_sequence
+    Order by bc.trip_id
+    """)
+    stop_connections = cur.fetchall()
+    cur.close()
+    conn.close()
+    graph = {stop[0]: [] for stop in stops}
+    
+    for connection in stop_connections:
+                # 3757:[3758,37]
+                # 3758:[3757,37]
+        val = float(format((connection[2]*1000), '.2f'))
+        graph[connection[0]].append((connection[1], val))
+        graph[connection[1]].append((connection[0], val))  # undirected graph
+    
+    return graph
+
 def ShortestPath(graph, start, end, type):
     queue = [(0, start)]
     distances = {node: float('inf') for node in graph}
@@ -241,7 +273,7 @@ def ShortestPath(graph, start, end, type):
         path.append(start)
 
 
-    whole = route_stop_details(path[::-1],type)    
+    whole = route_stop_details(path[::-1], type)    
 
     return whole
 
@@ -251,6 +283,7 @@ def time_adder(tt, t):
     platform_delay = datetime.timedelta(seconds= random.randint(5,8))
     tt += t + platform_delay
     return tt
+
 
 def route_stop_details(path,type):
     conn = get_db_connection()
@@ -317,7 +350,10 @@ def route_stop_details(path,type):
 
                 path_coords.append({
                     'stop_name': st[2],
-                    'geopoints': [st[3],st[4]]
+                    'geopoints': [st[3],st[4]],
+                    'stop_lat': st[3],
+                    'stop_lon':st[4]
+                    
                 })
 
                 stop_details.append({
@@ -325,7 +361,6 @@ def route_stop_details(path,type):
                     'stop_name': st[2],
                     'time_instance': str(total_time).split('.')[0],
                     'distance': st[1],
-                    'geopoints': [st[3],st[4]],
                     'route_fact': st[5]
                 })
 
@@ -345,84 +380,6 @@ def route_stop_details(path,type):
     return whole
 
 
-
-
-
-
-
-
-def dist_route_time(shortest_path):
-    print(shortest_path)
-    conn = get_db_connection()
-    cur = conn.cursor()    
-    cur.execute("""
-    SELECT stop_id, stop_sequence, point_distance, 
-	EXTRACT(EPOCH FROM (individual_time::interval)), trips.route_id, individual_time, route.route_color
-	FROM stop_times
-	Join trips ON trips.trip_id = stop_times.trip_id
-    Join route on route.route_id = trips.route_id    
-    """)
-    route_stop_time = cur.fetchall()
-    
-    # trip_change= defaultdict(list)
-    stop_to_route = {}
-    route_time = []
-    dist = 0
-    time = 0
-    sp = []
-    for i in shortest_path:
-        cur.execute("SELECT stop_id, stop_sequence FROM stop_times WHERE stop_id = %s", (i,))
-        st = cur.fetchone()
-        sp.append([st[0],st[1]])# type: ignore
-    now_time = datetime.datetime.now()
-    now_time = now_time.strftime("%H:%M:%S")
-    cur.close()
-    conn.close()
-    
-    for m in range(len(sp)):
-        for rst in route_stop_time:
-            if sp[m][0] == rst[0] and sp[m][1] == rst[1]:
-
-                stop_to_route[sp[m][0]] = rst[6]
-                dist += rst[2]
-                time += int(rst[3])
-                route_time.append(time_adder([now_time,rst[5]]))
-                now_time = route_time[-1]                
-                break
-    print(format(dist/1000, ".2f") ,format(time/60,".2f") , route_time  ,stop_to_route)
-    return  format(dist/1000, ".2f") ,format(time/60,".2f") , route_time  ,stop_to_route
-
-
-
-def constructBus_graph():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Fetch stops data
-    cur.execute("SELECT stop_id FROM buses_stops")
-    stops = cur.fetchall()
-    
-    # Fetch stop_times and trips data to construct the graph
-    cur.execute("""
-    Select bc.stop_id , bc2.stop_id ,bc2.estimated_distance
-    From buses_congo bc 
-    Join buses_congo bc2 ON bc.trip_id = bc2.trip_id 
-                AND bc.stop_sequence+1 = bc2.stop_sequence
-    Order by bc.trip_id
-    """)
-    stop_connections = cur.fetchall()
-    cur.close()
-    conn.close()
-    graph = {stop[0]: [] for stop in stops}
-    
-    for connection in stop_connections:
-                # 3757:[3758,37]
-                # 3758:[3757,37]
-        val = float(format((connection[2]*1000), '.2f'))
-        graph[connection[0]].append((connection[1], val))
-        graph[connection[1]].append((connection[0], val))  # undirected graph
-    
-    return graph
 
 
 def construct_graph_multimodal():
@@ -449,6 +406,9 @@ def construct_graph_multimodal():
 
     return graph 
 
+
+
+
 def shortest_path_multimodal(graph, start, end):
     queue = [(0, start, None)]  # (current_distance, current_node, current_mode)
     distances = {node: float('inf') for node in graph}
@@ -464,8 +424,8 @@ def shortest_path_multimodal(graph, start, end):
         
         for neighbor, weight, mode in graph[current_node]:
             if mode != current_mode:
-                # Add some cost if there's a mode change
-                weight += 5  # Example: penalty for changing modes
+                # Add cost on mode change
+                weight += 5  # penalty for changing modes
             
             distance = current_distance + weight
             
