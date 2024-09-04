@@ -15,11 +15,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
     <link rel="stylesheet" href="static/overlay_styles.css">
 </head>
+
 <body>
     <div id="map">
-        <div id="overlay" class="overlay-container">
+
+        <div id="overlay" class="overlay-container" >
             <div class="overlay-content">
-            <form method="POST" action="/searchRoute" id="route-form">
+            <form method="POST"  id="route-form" onsubmit="return showRouteSummary(event); ">
                 <input type="text" id="start_point" name="start_point" placeholder="Starting Point" onchange="updateMarkers()">
                 <input type="text" id="end_point" name="end_point" placeholder="Ending Point" onchange="updateMarkers()">
                 <select id="transport_type" name="transport_type" onchange="resetAwesomplete()">
@@ -35,16 +37,23 @@
               
         </div>
     </div>
-    <div id="route-summary">
-        <div class="route-summary-header">
-            <h5>Route Summary</h5>
-            <button class="close-button" onclick="closeRouteSummary()">X</button>
-        </div>
-        <div id="route-options"></div>
+    
+    
+</div>
+<div id="route-summary" class="route-summary d-none">
+    <div class="route-summary-header">
+        <span>Route Summary</span>
+        <button class="close-btn" onclick="closeRouteSummary()">X</button>
+    </div>
+    <div class="route-summary-content">
+
     </div>
 </div>
 
+ 
+
     <script>
+
         // Initialize the map
         var map = L.map('map',{
             zoomControl:false
@@ -54,6 +63,7 @@
             maxZoom: 18,
             attribution: '© OpenStreetMap'
         }).addTo(map);
+
         
         var startMarker, endMarker;
         // Function to add markers for start and end points
@@ -71,8 +81,9 @@
 
         
         
+        var startMarker, endMarker, routeLayer;
 
-       function updateMarkers() {
+        function updateMarkers() {
             var startStopName = document.getElementById('start_point').value;
             var endStopName = document.getElementById('end_point').value;
 
@@ -80,7 +91,7 @@
             fetch(`/api/getCoordinates?start=${startStopName}&end=${endStopName}`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
+                    
                     if (data.start && data.end) {
                         addMarkers(data.start.lat, data.start.lng, data.end.lat, data.end.lng);          
                     }}                     
@@ -125,10 +136,6 @@
                 fetchStops(transportType, endPointInput.value, awesompleteEnd);
             });
 
-            // // Update markers when the start point is selected
-            // // endPointInput.addEventListener('awesomplete-selectcomplete', function() {
-            // //     updateMarkers(); 
-            // });
         }
 
         function fetchStops(transportType, query, awesompleteInstance) {
@@ -145,19 +152,120 @@
                     console.error("Error fetching stops:", error);
                 });
         }
+        
+        
+        // commmunicator funcn to backend
+        function showRouteSummary(event) {
+            event.preventDefault();
+            var formelement = document.getElementById('route-form')
+            var data = new FormData(formelement);            
+           
+
+            fetch('/api/getRouteSummary',{
+                method: 'POST',
+                body: data,
+
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateRouteSummary(data.route_summary, data.dist, data.time);
+                drawRouteOnMap(data.path); 
+                document.getElementById('route-summary').classList.remove('d-none');
+            })
+                .catch(error => {
+                    console.error("Error fetching route summary:", error);
+                });
+        }
+        
+
+        //  route summary container
+        function populateRouteSummary(routeSummary, totalDistance, totalTime) {
+            var summaryContainer = document.querySelector('.route-summary-content');
+            summaryContainer.innerHTML = `<h4>Distance: ${totalDistance.toFixed(2)} km</h4>
+                                        <h4>Time: ${totalTime}</h4>`;
+
+            var previousRoute = null;
+            var isFirstRoute = true;
+
+            
+            routeSummary.forEach(stop => {
+                
+                if (stop.route_fact !== previousRoute) {
+                    var routeLine = document.createElement('div');
+                    routeLine.className = 'route-line';
+                    routeLine.style.backgroundColor =  '#00FF00'; // Use the route color or a default color
+                    routeLine.style.padding = '5px';
+                    routeLine.style.color = 'white'; 
+                    routeLine.style.marginBottom = '5px';
+                    routeLine.style.borderRadius = '5px';
+                    
+                    // text for the first route or when the route changes
+                    if (isFirstRoute) {
+                        routeLine.textContent = `${stop.route_fact} line`;
+                        isFirstRoute = false;
+                    } else {
+                        routeLine.textContent = `Change to ${stop.route_fact} line`;
+                    }
+
+                    summaryContainer.appendChild(routeLine);
+                    previousRoute = stop.route_fact;
+                }
+
+                // div for each stop with the time and the route color label
+                var stopElement = document.createElement('div');
+                stopElement.classList.add('stop-summary');
+                stopElement.style.display = 'flex';
+                stopElement.style.justifyContent = 'space-between';
+                stopElement.style.alignItems = 'center';
+                stopElement.style.padding = '5px 0';
+                
+                stopElement.innerHTML = `
+                    <span>${stop.name} - ${stop.time}</span>
+                `;
+                summaryContainer.appendChild(stopElement);
+            });
+        }
+
+        function drawRouteOnMap(path) {
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            var latLngs=[]
+            path.forEach(function(path){
+                latLngs.push(path.geopoints);
+            })
+            path.forEach(function(p){
+                stops = String(p.stop_name)
+                var marker = L.circleMarker([p.stop_lat,p.stop_lon],{
+                    color: 'blue',
+                    radius: 8
+                }).addTo(map)
+                .bindPopup(stops)                
+
+            })            
+            
+            routeLayer = L.polyline(latLngs, {color: 'red', weight: 4}).addTo(map);            
+            map.fitBounds(routeLayer.getBounds());
+        }
+        
+
+        function closeRouteSummary(){
+            document.getElementById('route-summary').classList.add('d-none');
+        }
+
+
         map.on('zoomend', function() {
             var zoomLevel = map.getZoom();
             var inputs = document.querySelector('.overlay-container');
-            if (zoomLevel < 12) {
+            if (zoomLevel < 10) {
                 inputs.style.display = 'none';
             } else {
                 inputs.style.display = 'flex';
             }
         });
 
-        function closeRouteSummary() {
-            document.getElementById('route-summary').style.display = 'none';
-        }
+       
     </script>
 </body>
 </html>
