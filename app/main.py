@@ -170,11 +170,12 @@ async def searchRoute(request: Request, start_point: str = Form(...),
     elif transport_type == 'multimodal':
         graph = construct_graph_multimodal()
         whole = shortest_path_multimodal(graph, start, end)
+        print(whole)
         
-        for i in whole['stop_details'] :
-            route_summary.append({'name':i['stop_name'], 
-                                  'time':i['time_instance'], 
-                                  'route_fact':i['route_fact']})
+        # for i in whole['stop_details'] :
+        #     route_summary.append({'name':i['stop_name'], 
+        #                           'time':i['time_instance'], 
+        #                           'route_fact':i['route_fact']})
 
 
 

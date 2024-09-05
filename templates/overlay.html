@@ -64,24 +64,36 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        
-        var startMarker, endMarker;
+        const startIcon = L.divIcon({
+        html: '<div style="background-color: green; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>',
+        iconSize: [20, 20],
+        className: 'custom-marker'
+        });
+
+        const endIcon = L.divIcon({
+        html: '<div style="background-color: red; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>',
+        iconSize: [20, 20],
+        className: 'custom-marker'
+        });
+
+
+        var startMarker, endMarker,  dashedLine, routeLayer;
         // Function to add markers for start and end points
-        function addMarkers(startLat, startLng, endLat, endLng) {
-            if (startMarker) map.removeLayer(startMarker);
-            if (endMarker) map.removeLayer(endMarker);
+        // function addMarkers(startLat, startLng, endLat, endLng) {
+        //     if (startMarker) map.removeLayer(startMarker);
+        //     if (endMarker) map.removeLayer(endMarker);
 
-            startMarker = L.marker([startLat, startLng], {icon: L.icon({iconUrl: 'icons/start_icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('Start');
-            endMarker = L.marker([endLat, endLng], {icon: L.icon({iconUrl: 'icons/end_icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('End');
+        //     startMarker = L.marker([startLat, startLng], {icon: L.icon({iconUrl: 'icons/start_icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('Start');
+        //     endMarker = L.marker([endLat, endLng], {icon: L.icon({iconUrl: 'icons/end_icon.png', iconSize: [32, 32]})}).addTo(map).bindPopup('End');
 
-            // Focus the map on the markers
-            var bounds = L.latLngBounds([[startLat, startLng], [endLat, endLng]]);
-            map.fitBounds(bounds);
-        }
+        //     // Focus the map on the markers
+        //     var bounds = L.latLngBounds([[startLat, startLng], [endLat, endLng]]);
+        //     map.fitBounds(bounds);
+        // }
 
         
         
-        var startMarker, endMarker, routeLayer;
+
 
         function updateMarkers() {
             var startStopName = document.getElementById('start_point').value;
@@ -93,10 +105,23 @@
                 .then(data => {
                     
                     if (data.start && data.end) {
-                        addMarkers(data.start.lat, data.start.lng, data.end.lat, data.end.lng);          
-                    }}                     
+                        if (startMarker) map.removeLayer(startMarker);
+                        if (endMarker) map.removeLayer(endMarker);
+                        if (dashedLine) map.removeLayer(dashedLine);
+                        
+                        startMarker = L.marker([data.start.lat, data.start.lng],{icon:startIcon}).addTo(map).bindPopup('Start');
+                        endMarker = L.marker([data.end.lat, data.end.lng],{icon:endIcon}).addTo(map).bindPopup('End');
+
+                        dashedLine = L.polyline([[data.start.lat, data.start.lng], [data.end.lat, data.end.lng]], {
+                                                color: 'black', dashArray: '5, 10', // dash pattern
+                                                weight: 2, opacity: 0.7
+                                            }).addTo(map);
+                        
+                        var bounds = L.latLngBounds([[data.start.lat, data.start.lng], [data.end.lat, data.end.lng]]);
+                        map.fitBounds(bounds);
                     
-                )
+                }
+            })
                 .catch(error => {
                     console.error("Error fetching coordinates:", error);
                 });
