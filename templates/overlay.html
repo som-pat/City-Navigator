@@ -33,7 +33,7 @@
                 </select>
                 <input type="submit" value="Search route" class="btn btn-primary">
             </form>
-            <!-- Transport buttons -->
+            <!-- Transport-->
               
         </div>
     </div>
@@ -191,10 +191,12 @@
 
         //  route summary container
         function populateRouteSummary(routeSummary, totalDistance, totalTime) {
+            if (dashedLine) map.removeLayer(dashedLine);
             var summaryContainer = document.querySelector('.route-summary-content');
             summaryContainer.innerHTML = `<h4>Distance: ${totalDistance.toFixed(2)} km</h4>
                                         <h4>Time: ${totalTime}</h4>`;
-
+            
+                                        
             var previousRoute = null;
             var isFirstRoute = true;
 
@@ -204,7 +206,7 @@
                 if (stop.route_fact !== previousRoute) {
                     var routeLine = document.createElement('div');
                     routeLine.className = 'route-line';
-                    routeLine.style.backgroundColor =  '#00FF00'; // Use the route color or a default color
+                    routeLine.style.backgroundColor =  '#00ffb7'; // Use the route color or a default color
                     routeLine.style.padding = '5px';
                     routeLine.style.color = 'white'; 
                     routeLine.style.marginBottom = '5px';
