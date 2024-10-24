@@ -41,7 +41,7 @@ project_root/
 └── ETL_combi.py
 ```
 
-For running the project follow the below instructions 
+To run the project follow the below instructions 
 ```
 - Clone the repo : https://github.com/som-pat/Metro.git 
 - Start virtual environment: .venv\Scripts\Activate
@@ -50,7 +50,8 @@ For running the project follow the below instructions
 - Start the whole app : docker-compose up
 - Application will be running on localhost:8000
 ```
-#### This project follows the guidelines from the General Transit Feed Specification (GTFS) for its working and the data used is static, ETA shown is based on historical data.
+## References
+
 ##### GTFS link 
 - [https://gtfs.org/]
 - [https://developers.google.com/transit/gtfs]
